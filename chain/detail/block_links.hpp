@@ -3,8 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef DETAIL_CHAIN_HPP
-#define DETAIL_CHAIN_HPP
+#ifndef DETAIL_BLOCK_LINKS_HPP
+#define DETAIL_BLOCK_LINKS_HPP
 
 namespace chain {
 
@@ -169,4 +169,4 @@ class block_links {
 
 }  // namespace chain
 
-#endif  // DETAIL_CHAIN_HPP
+#endif  // DETAIL_BLOCK_LINKS_HPP

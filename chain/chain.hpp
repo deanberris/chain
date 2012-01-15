@@ -7,16 +7,9 @@
 #define CHAIN_HPP
 
 #include <shared_ptr>
-#include <detail/block_tree.hpp>
+#include <detail/block_links.hpp>
 
 namespace chain {
-
-namespace detail {
-
-  template <class CharT, class AllocatorT>
-  class block_tree;
-
-}  // namespace detail
 
 template <class CharT, class AllocatorT>
 class basic_chain {
