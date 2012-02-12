@@ -12,6 +12,10 @@
 // correct.
 #include <cassert>
 
+// We need to test swap and how it works with ADL and the standard
+// implementation of swap.
+#include <utility>
+
 // In the context of this test we would like to define an allocator
 // implementation that we can use in the tests for usage.
 template <class T>
@@ -98,12 +102,62 @@ void test_assignment() {
   chain another("I don't really care what's in here!");
   another = original;
   assert(original == another);
+
+  // We also rely on implicit construction of chain instances using the
+  // literals.
+  original = "This is a long flight!";
+  assert(original != another);
+
+  // As well as implicit construction from std::string instances.
+  std::string long_flight("This is a long flight!");
+  another = long_flight;
+  assert(original == another);
 }
 
 // We also want to ensure as one of the important requirements on objects that
 // exhibit value semantics is that we can actually swap two of them.
 void test_swap() {
-  // TODO(dberris): make this happen!
+  // Swap should enforce strong exception safety. This is so that we can enforce
+  // an assignment that also gives a strong exception safety guarantee.
+  using chain::chain;
+  chain original("The quick brown fox while on the plane is tired.");
+
+  // To do this we depend on the very important property that a default
+  // constructed chain is not equal to one that is empty. The rationale for this
+  // is so that we can make sure that a member chain that has just been default
+  // constructed doesn't suddenly get semantics as if it was a chain that
+  // referred to an empty string. This allows us to roll-back the state of a
+  // chain in case we need to when operations in a group are all rolled back.
+  chain another, defaulted;
+  chain empty("");
+  assert(another == defaulted);
+  assert(another != empty);
+  std::swap(another, empty);
+  assert(empty == defaulted);
+  assert(another != defaulted);
+  std::swap(another, empty);
+  assert(empty != defaulted);
+  assert(another == defaulted);
+
+  // This property is especially important in case we use or have different
+  // allocators.
+  std::allocator<char> allocator1, allocator2;
+  chain a(&allocator1), b(&allocator2);
+
+  // To set this up properly, need to make sure that:
+  //   1) a is equivalent to b even though the allocators are not the same.
+  //   2) that both a and b are equivalent to default constructed chains without
+  //      an explicitly provided allocator.
+  assert(a == b);
+  assert(a == defaulted);
+  assert(b == defaulted);
+
+  // We also then now enforce that if we swap the two, we maintain this
+  // invariant.
+  std::swap(a, b);
+  assert(a == b);
+  assert(a == defaulted);
+  assert(b == defaulted);
 }
 
 int main(int argc, char *argv[]) {
